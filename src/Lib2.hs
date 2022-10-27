@@ -1,13 +1,16 @@
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Lib2(renderDocument, hint, gameStart) where
+module Lib2(State, renderDocument, hint, gameStart) where
 
-import Types ( ToDocument(..), Document, Check )
+import Types ( ToDocument(..), Document(..), Check(..), Coord(..) )
 import Lib1 (State(..))
 
 -- IMPLEMENT
 -- First, make Check an instance of ToDocument class
 
+instance ToDocument Check where
+  toDocument (Check c) = DMap [("coords", DList $ [d | d <- toDocument c])]
+  
 -- IMPLEMENT
 -- Renders document to yaml
 renderDocument :: Document -> String

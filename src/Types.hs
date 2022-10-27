@@ -1,9 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Types (
     Document(..), Check(..), Coord(..),
-    ToDocument, toDocument,
-    FromDocument, fromDocument
-) where
+    ToDocument, toDocument
+    ) where
 import Data.Yaml as Y
 import Data.HashMap.Strict as HMS
 import Data.Text as T
@@ -49,6 +48,3 @@ instance FromJSON Document where
 
 class ToDocument a where
     toDocument :: a -> Document
-
-class FromDocument a where
-    fromDocument :: Document -> Either String a
