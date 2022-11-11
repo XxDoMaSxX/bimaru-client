@@ -24,7 +24,7 @@ emptyState  = (Cord [])
 gameStart :: State -> Document -> State
 gameStart (Cord state) doc =
     let cords = makeCords doc ([0],[0]) 
-        tuple = makeTuple cords 'x' []
+        tuple = makeTuple_ (cords) 0 []
     in Cord (tuple++state)
 makeCords :: Document -> ([Int],[Int]) -> ([Int],[Int])
 makeCords (DMap ((str,doc):t)) (col,row) =
@@ -35,7 +35,7 @@ makeCords (DMap ((str,doc):t)) (col,row) =
         _->  error (show str)
 
 makeList  :: Document ->[Int]->[Int]
-makeList (DList [DInteger last]) list= last:list
+makeList (DList [DInteger last]) list= reverse (last:list)
 makeList (DList (h:t)) list = makeList (DList (t)) ((parser_DInteger h):list)
 makeList dox a = error (show "Bad parrametres")
 
@@ -44,8 +44,27 @@ makeTuple ((hC:tC),(hR:tR)) char tuple = makeTuple (tC,tR) char ((hC,hR,char):tu
 makeTuple ([],[]) char tuple = tuple
 makeTuple e1 e2 e3 = error "Bad parametres"
 
+makeTuple_  :: ([Int],[Int])->Int->[(Int,Int,Char)]->[(Int,Int,Char)]
+makeTuple_ ((hC:tC),(hR:tR)) int tuple = makeTuple_ (tC,tR) (int+1) ((-1,int,(intToChar (hC))):(int,10,(intToChar (hR))):tuple)
+makeTuple_ ([],[]) int tuple = tuple
+makeTuple_ e1 e2 e3 = error "Bad parametres"
+
+intToChar :: Int -> Char
+intToChar x 
+    | x == 0 = '0'
+    | x == 1 = '1'
+    | x == 2 = '2'
+    | x == 3 = '3'
+    | x == 4 = '4'
+    | x == 5 = '5'
+    | x == 6 = '6'
+    | x == 7 = '7'
+    | x == 8 = '8'
+    | x == 9 = '9'
+    | x > 9 = error ("Intas netelpa i chara")  -- (intToChar (x `div` 10)  ++ intToChar (mod x 10 ) )
+
 render :: State->String
-render (Cord st)= makeSpace (render_ (sort st []) (0,0,10,10) "") "" ++ show(st)
+render (Cord st)= makeSpace (render_ (sort st []) (-1,0,10,9) "") "" ++ show(st)
 
 
 -- IMPLEMENT
@@ -110,8 +129,8 @@ hintf (DMap ((str,doc):t)) (Cord state2) (x,y,c)=
         "coords"-> hintf doc (Cord state2) (x,y,c)
         "tail"-> hintf doc (Cord state2) (x,y,c)
         "head"-> hintf (DMap t) (hintf doc (Cord state2) (x,y,c)) (x,y,c)
-        "col"-> hintf (DMap t) (Cord state2) ((parser_DInteger doc),y,'o')
-        "row"->  Cord ((x,(parser_DInteger doc),c): state2)
+        "col"-> hintf (DMap t) (Cord state2) (x,(parser_DInteger doc),'o')
+        "row"->  Cord (((parser_DInteger doc),y,c): state2)
 
 parser_DInteger :: Document -> Int
 parser_DInteger (DInteger a) = a
@@ -154,20 +173,20 @@ remove_element_byCord [] newList value = newList
 
 render_ :: [(Int,Int,Char)]-> (Int,Int,Int,Int)->String->String
 render_ ((objx,objy,objc):t) (x,y,width,hight) rez
-    | y>width = render_ ((objx,objy,objc):t) (x+1,0,width,hight) ('|':rez)
+    | y>width = render_ ((objx,objy,objc):t) (x+1,0,width,hight) ('|':' ':rez)
     | x>hight = error (show rez)
-    | objx == x && objy == y && objc == 'x' =  render_ t (x,y+1,width,hight) ('=':rez)
-    | objx == x && objy == y =  render_ t (x,y+1,width,hight) (objc:rez) 
-    | objy > y || objx > x   = render_ ((objx,objy,objc):t) (x,y+1,width,hight) ('=':rez)
+    | objx == x && objy == y && objc == 'x' =  render_ t (x,y+1,width,hight) ('=':' ':rez)
+    | objx == x && objy == y =  render_ t (x,y+1,width,hight) (objc:' ':rez) 
+    | objy > y || objx > x   = render_ ((objx,objy,objc):t) (x,y+1,width,hight) ('=':' ':rez)
     | otherwise = render_ t (x,y,width,hight) rez
 render_ [] (x,y,width,hight) rez 
-    | y>width = render_ [] (x+1,0,width,hight) ('|':rez)
+    | y>width = render_ [] (x+1,0,width,hight) ('|':' ':rez)
     | x>hight = rez
-    | otherwise =render_ [] (x,y+1,width,hight) ('=':rez) 
+    | otherwise =render_ [] (x,y+1,width,hight) ('=':' ':rez) 
     
 makeSpace ::  String -> String -> String
 makeSpace (h : t) rez =
   case h of
-    '|' -> makeSpace t ('\n' : rez)
+    '|' -> makeSpace t ('\n' :'\n' : rez)
     _ -> makeSpace t (h : rez)
 makeSpace "" rez = rez
