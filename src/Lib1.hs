@@ -45,7 +45,7 @@ makeTuple ([],[]) char tuple = tuple
 makeTuple e1 e2 e3 = error "Bad parametres"
 
 makeTuple_  :: ([Int],[Int])->Int->[(Int,Int,Char)]->[(Int,Int,Char)]
-makeTuple_ ((hC:tC),(hR:tR)) int tuple = makeTuple_ (tC,tR) (int+1) ((-1,int,(intToChar (hC))):(int,10,(intToChar (hR))):tuple)
+makeTuple_ ((hC:tC),(hR:tR)) int tuple = makeTuple_ (tC,tR) (int+1) ((-1,int,(intToChar (hR))):(int,10,(intToChar (hC))):tuple)
 makeTuple_ ([],[]) int tuple = tuple
 makeTuple_ e1 e2 e3 = error "Bad parametres"
 
